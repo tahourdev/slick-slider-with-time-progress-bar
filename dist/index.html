@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CodePen - Slick slider with timer (progress) bar</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+    <script src="https://rawgit.com/kenwheeler/slick/master/slick/slick.js"></script>
+    <link href="https://rawgit.com/kenwheeler/slick/master/slick/slick-theme.css" rel="stylesheet" />
+    <link href="https://rawgit.com/kenwheeler/slick/master/slick/slick.css" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="./style.css" /> -->
+
+    <style>
+      h3 {
+        margin: 5px 0;
+      }
+
+      .sliderContainer {
+        position: relative;
+      }
+
+      .slider {
+        width: 500px;
+        margin: 30px 50px 50px;
+      }
+
+      .slick-slide {
+        background: #3a8999;
+        color: white;
+        padding: 80px 0 120px;
+        font-size: 30px;
+        font-family: "Arial", "Helvetica";
+        text-align: center;
+      }
+
+      .slick-prev:before,
+      .slick-next:before {
+        color: black;
+      }
+
+      .slick-dots {
+        bottom: -30px;
+      }
+
+      .slick-slide:nth-child(odd) {
+        background: #e84a69;
+      }
+
+      .progressBarContainer {
+        position: absolute;
+        bottom: 20px;
+        width: 300px;
+        left: 150px;
+      }
+
+      .progressBarContainer div {
+        display: block;
+        width: 30%;
+        padding: 0;
+        cursor: pointer;
+        margin-right: 5%;
+        float: left;
+        color: white;
+      }
+
+      .progressBarContainer div:last-child {
+        margin-right: 0;
+      }
+
+      .progressBarContainer div span.progressBar {
+        width: 100%;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.4);
+        display: block;
+      }
+
+      .progressBarContainer div span.progressBar .inProgress {
+        background-color: rgba(255, 255, 255, 1);
+        width: 0%;
+        height: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- partial:index.partial.html -->
+    <div class="sliderContainer">
+      <div class="slider single-item">
+        <div>Slide1</div>
+        <div>Slide2</div>
+        <div>Slide3</div>
+      </div>
+      <div class="progressBarContainer">
+        <div class="item">
+          <h3>Slide 1</h3>
+          <span data-slick-index="0" class="progressBar"></span>
+        </div>
+        <div class="item">
+          <h3>Slide 2</h3>
+          <span data-slick-index="1" class="progressBar"></span>
+        </div>
+        <div class="item">
+          <h3>Slide 3</h3>
+          <span data-slick-index="2" class="progressBar"></span>
+        </div>
+      </div>
+    </div>
+    <!-- partial -->
+    <script>
+      $(".slider").slick({
+        infinite: true,
+        arrows: false,
+        dots: false,
+        autoplay: false,
+        speed: 800,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      });
+
+      //ticking machine
+      var percentTime;
+      var tick;
+      var time = 0.1;
+      var progressBarIndex = 0;
+
+      $(".progressBarContainer .progressBar").each(function (index) {
+        var progress = "<div class='inProgress inProgress" + index + "'></div>";
+        $(this).html(progress);
+      });
+
+      function startProgressbar() {
+        resetProgressbar();
+        percentTime = 0;
+        tick = setInterval(interval, 10);
+      }
+
+      function interval() {
+        if (
+          $('.slider .slick-track div[data-slick-index="' + progressBarIndex + '"]').attr("aria-hidden") ===
+          "true"
+        ) {
+          progressBarIndex = $('.slider .slick-track div[aria-hidden="false"]').data("slickIndex");
+          startProgressbar();
+        } else {
+          percentTime += 1 / (time + 5);
+          $(".inProgress" + progressBarIndex).css({
+            width: percentTime + "%",
+          });
+          if (percentTime >= 100) {
+            $(".single-item").slick("slickNext");
+            progressBarIndex++;
+            if (progressBarIndex > 2) {
+              progressBarIndex = 0;
+            }
+            startProgressbar();
+          }
+        }
+      }
+
+      function resetProgressbar() {
+        $(".inProgress").css({
+          width: 0 + "%",
+        });
+        clearInterval(tick);
+      }
+      startProgressbar();
+      // End ticking machine
+
+      $(".item").click(function () {
+        clearInterval(tick);
+        var goToThisIndex = $(this).find("span").data("slickIndex");
+        $(".single-item").slick("slickGoTo", goToThisIndex, false);
+        startProgressbar();
+      });
+    </script>
+  </body>
+</html>
